@@ -89,32 +89,30 @@
     ]
   },
   "candleWriter": {
-    "adapter": "sqlite",
     "enabled": true
   },
-  "adapters": {
-    "sqlite": {
-      "path": "plugins/sqlite",
-      "dataDirectory": "./history",
-      "version": 0.1,
-      "dependencies": [
-        {
-          "module": "sqlite3",
-          "version": "3.1.4"
-        }
-      ]
-    },
-    "postgresql": {
-      "path": "plugins/postgresql",
-      "version": 0.1,
-      "connectionString": "postgres://user:pass@localhost:5432",
-      "dependencies": [
-        {
-          "module": "pg",
-          "version": "6.1.0"
-        }
-      ]
-    }
+  "adapter": "sqlite",
+  "sqlite": {
+    "path": "plugins/sqlite",
+    "dataDirectory": "./history",
+    "version": 0.1,
+    "dependencies": [
+      {
+        "module": "sqlite3",
+        "version": "3.1.4"
+      }
+    ]
+  },
+  "postgresql": {
+    "path": "plugins/postgresql",
+    "version": 0.1,
+    "connectionString": "postgres://user:pass@localhost:5432",
+    "dependencies": [
+      {
+        "module": "pg",
+        "version": "6.1.0"
+      }
+    ]
   },
   "backtest": {
     "adapter": "sqlite",
