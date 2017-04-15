@@ -31,6 +31,8 @@ Store.prototype.writeCandles = function writeCandles () {
   }
 
   var candles = [];
+  var version = config.candleWriter.version;
+
   _.each(this.candleCache, candle => {
     var mCandle = {
       time: moment().utc(),
@@ -44,6 +46,16 @@ Store.prototype.writeCandles = function writeCandles () {
       trades: candle.trades,
       pair: this.pair
     };
+
+    if(version === 2) {
+      _.extend(mCandle, {
+        buyVolume: candle.buyVolume,
+        buyTrades: candle.buyTrades,
+        lag: candle.lag,
+        raw: candle.raw
+      });
+    }
+
     candles.push(mCandle);
   });
 

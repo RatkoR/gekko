@@ -327,6 +327,12 @@ config.redisBeacon = {
 }
 
 config.candleWriter = {
+  // Candles can be created in two versions. Version 1
+  // is the defalt one, version 2 has some additional
+  // fields (see top comments in candleCreator.js).
+  // Note, that you need to patch your DB tables with these
+  // additional fields if you've created tables for v1 candles.
+  version: 2,
   enabled: false
 }
 

@@ -14,22 +14,12 @@ var Store = function(done, pluginMeta) {
   this.cache = [];
 }
 
-Store.prototype.upsertTables = function() {
+Store.prototype.upsertTables = function () {
+  var version = config.candleWriter.version;
+
   var createQueries = [
-    `
-      CREATE TABLE IF NOT EXISTS
-      ${sqliteUtil.table('candles')} (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        start INTEGER UNIQUE,
-        open REAL NOT NULL,
-        high REAL NOT NULL,
-        low REAL NOT NULL,
-        close REAL NOT NULL,
-        vwp REAL NOT NULL,
-        volume REAL NOT NULL,
-        trades INTEGER NOT NULL
-      );
-    `,
+    prepareCandleTableSql(version)
+    ,
 
     // TODO: create trades
     // ``
@@ -49,23 +39,12 @@ Store.prototype.writeCandles = function() {
   if(_.isEmpty(this.cache))
     return;
 
-  var stmt = this.db.prepare(`
-    INSERT OR IGNORE INTO ${sqliteUtil.table('candles')}
-    VALUES (?,?,?,?,?,?,?,?,?)
-  `);
+  var version = config.candleWriter.version;
+
+  var stmt = this.db.prepare(prepareCandleSql(version));
 
   _.each(this.cache, candle => {
-    stmt.run(
-      null,
-      candle.start.unix(),
-      candle.open,
-      candle.high,
-      candle.low,
-      candle.close,
-      candle.vwp,
-      candle.volume,
-      candle.trades
-    );
+    stmt.run(prepareCandleData(candle, version));
   });
 
   stmt.finalize();
@@ -105,5 +84,75 @@ if(config.candleWriter.enabled)
 
 // if(config.adviceWriter.enabled)
 //   Store.prototype.processAdvice = processAdvice;
+
+var prepareCandleTableSql = function (version) {
+  var fields = `
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    start INTEGER UNIQUE,
+    open REAL NOT NULL,
+    high REAL NOT NULL,
+    low REAL NOT NULL,
+    close REAL NOT NULL,
+    vwp REAL NOT NULL,
+    volume REAL NOT NULL,
+    trades INTEGER NOT NULL
+  `;
+
+  if(version === 2) {
+    fields += `,
+      buy_volume REAL NOT NULL,
+      buy_trades INTEGER NOT NULL,
+      lag INTEGER NOT NULL,
+      raw TEXT
+    `;
+  }
+
+  return `
+    CREATE TABLE IF NOT EXISTS
+      ${sqliteUtil.table('candles')} (
+      ${fields}
+    );`
+}
+
+var prepareCandleSql = function(version) {
+  switch(version) {
+    case 2:
+      var sql = `
+        INSERT OR IGNORE INTO ${sqliteUtil.table('candles')}
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+      break;
+    default:
+      var sql = `
+        INSERT OR IGNORE INTO ${sqliteUtil.table('candles')}
+        VALUES (?,?,?,?,?,?,?,?,?)`;
+  }
+
+  return sql;
+}
+
+var prepareCandleData = function(candle, version) {
+  var data = [
+    null,
+    candle.start.unix(),
+    candle.open,
+    candle.high,
+    candle.low,
+    candle.close,
+    candle.vwp,
+    candle.volume,
+    candle.trades
+  ];
+
+  if(version === 2) {
+    data = data.concat([
+      candle.buyVolume,
+      candle.buyTrades,
+      candle.lag,
+      JSON.stringify(candle.raw)
+    ]);
+  }
+
+  return data;
+}
 
 module.exports = Store;
