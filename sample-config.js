@@ -332,7 +332,7 @@ config.candleWriter = {
   // fields (see top comments in candleCreator.js).
   // Note, that you need to patch your DB tables with these
   // additional fields if you've created tables for v1 candles.
-  version: 2,
+  version: 1,
   enabled: false
 }
 
