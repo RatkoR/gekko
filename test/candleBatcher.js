@@ -7,6 +7,7 @@ var _ = require('lodash');
 var moment = require('moment');
 
 var utils = require(__dirname + '/../core/util');
+var config = utils.getConfig();
 
 var dirs = utils.dirs();
 var CandleBatcher = require(dirs.core + 'candleBatcher');
@@ -24,20 +25,52 @@ var candles = [
   {"start":moment("2015-02-15T00:06:00.000Z"),"open":257.46,"high":257.48,"low":257.46,"close":257.48,"vwp":257.47333333333336,"volume":7.5,"trades":4}
 ];
 
-describe('core/candleBatcher', function() {
+var version2Candles = [
+  {"start":moment("2015-02-14T23:57:00.000Z"),"open":257.19,"high":257.19,"low":257.18,"close":257.18,"vwp":257.18559990418294,"volume":0.97206065,"trades":2,"buyVolume":0.97206065,buyTrades:2,lag:100,raw:[{"a":1}]},
+  {"start":moment("2015-02-14T23:58:00.000Z"),"open":257.02,"high":257.02,"low":256.98,"close":256.98,"vwp":257.0175849772836,"volume":4.1407478,"trades":2,"buyVolume":2.0,buyTrades:1,lag:200,raw:[{"b":1}]}
+];
+
+describe('core/candleBatcher', function () {
   var cb;
 
-  it('should throw when not passed a number', function() {
+  it('should throw when not passed an object', function() {
     expect(function() {
       new CandleBatcher();
+    }).to.throw('missing options parameter');
+  });
+
+  it('should throw when not passed a candleSize in object', function() {
+    expect(function() {
+      new CandleBatcher({});
     }).to.throw('candleSize is not a number');
   });
 
-  it('should instantiate', function() {
-    cb = new CandleBatcher(2);
+  it('should instantiate without candleVersion value', function () {
+    cb = new CandleBatcher({ candleSize: 2 });
+    expect(cb.candleVersion).to.be.equal(1);
   });
 
-  it('should throw when fed a candle', function() {
+  it('should instantiate with candleVersion value undefined', function () {
+    cb = new CandleBatcher({candleSize:2,candleVersion:undefined});
+    expect(cb.candleVersion).to.be.equal(1);
+  });
+
+  it('should instantiate with candleVersion value null', function () {
+    cb = new CandleBatcher({candleSize:2,candleVersion:null});
+    expect(cb.candleVersion).to.be.equal(1);
+  });
+
+  it('should instantiate v2 candleVersion', function () {
+    cb = new CandleBatcher({candleSize:2, candleVersion:2});
+    expect(cb.candleVersion).to.be.equal(2);
+  });
+
+  it('should instantiate', function () {
+    cb = new CandleBatcher({candleSize:2, candleVersion:1});
+    expect(cb.candleVersion).to.be.equal(1);
+  });
+
+  it('should throw when fed a candle', function () {
     var candle = _.first(candles);
     expect(
       cb.write.bind(cb, candle)
@@ -54,7 +87,7 @@ describe('core/candleBatcher', function() {
   });
 
   it('should emit 5 events when fed 10 candles', function() {
-    cb = new CandleBatcher(2);
+    cb = new CandleBatcher({candleSize:2, candleVersion:1});
 
     var spy = sinon.spy();
     cb.on('candle', spy);
@@ -63,7 +96,7 @@ describe('core/candleBatcher', function() {
   });
 
   it('should correctly add two candles together', function() {
-    cb = new CandleBatcher(2);
+    cb = new CandleBatcher({candleSize:2, candleVersion:1});
     var _candles = _.first(candles, 2);
     var first = _.first(_candles);
     var second = _.last(_candles);
@@ -90,4 +123,37 @@ describe('core/candleBatcher', function() {
 
   });
 
+  it('should correctly add two v2 candles together', function () {
+    cb = new CandleBatcher({candleSize:2, candleVersion:2});
+
+    var _candles = _.first(version2Candles, 2);
+    var first = _.first(_candles);
+    var second = _.last(_candles);
+
+    var result = {
+      start: first.start,
+      open: first.open,
+      high: _.max([first.high, second.high]),
+      low: _.min([first.low, second.low]),
+      close: second.close,
+      volume: first.volume + second.volume,
+      vwp: (first.vwp * first.volume) + (second.vwp * second.volume),
+      trades: first.trades + second.trades,
+      buyVolume: first.buyVolume + second.buyVolume,
+      buyTrades: first.buyTrades + second.buyTrades,
+      lag: _.max([first.lag, second.lag]),
+      raw: first.raw.concat(second.raw)
+    };
+
+    result.vwp /= result.volume;
+
+    var spy = sinon.spy();
+    cb.on('candle', spy);
+    cb.write( _candles );
+
+    var cbResult = _.first(_.first(spy.args));
+
+    expect(cbResult).to.deep.equal(result);
+
+  });
 });
