@@ -16,7 +16,10 @@ var Actor = function(done) {
 
   this.done = done;
 
-  this.batcher = new CandleBatcher(config.tradingAdvisor.candleSize);
+  var candleSize = config.tradingAdvisor.candleSize;
+  var candleVersion = config.candleWriter.version;
+
+  this.batcher = new CandleBatcher({candleSize, candleVersion});
 
   this.methodName = config.tradingAdvisor.method;
 

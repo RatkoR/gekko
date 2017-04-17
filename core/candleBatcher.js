@@ -6,18 +6,25 @@
 // Acts as ~fake~ stream: takes
 // 1m candles as input and emits
 // bigger candles.
-// 
+//
 // input are transported candles.
 
 var _ = require('lodash');
 var util = require(__dirname + '/util');
 
-var CandleBatcher = function(candleSize) {
-  if(!_.isNumber(candleSize))
+/**
+ * @param {candleSize:integer, candleVersion:integer} options
+ */
+var CandleBatcher = function(options) {
+  if(!_.isObject(options))
+    throw 'missing options parameter';
+
+  if(!_.isNumber(options.candleSize))
     throw 'candleSize is not a number';
 
-  this.candleSize = candleSize;
+  this.candleSize = options.candleSize;
   this.smallCandles = [];
+  this.candleVersion = _.isNumber(options.candleVersion) ? options.candleVersion : 1 ;
 
   _.bindAll(this);
 }
@@ -56,9 +63,19 @@ CandleBatcher.prototype.calculate = function() {
       candle.volume += m.volume;
       candle.vwp += m.vwp * m.volume;
       candle.trades += m.trades;
+
+      if(this.candleVersion === 2) {
+        candle.buyVolume += m.buyVolume;
+        candle.buyTrades += m.buyTrades;
+        candle.lag = _.max([candle.lag, m.lag]);
+        candle.raw = candle.raw ?
+          candle.raw.concat(m.raw || []) : [];
+      }
+
       return candle;
     },
-    first
+    first,
+    this
   );
 
   if(candle.volume)

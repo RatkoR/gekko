@@ -50,7 +50,9 @@ var doneFn = () => {
 module.exports = function(candleSize, _next) {
   next = _.once(_next);
 
-  batcher = new CandleBatcher(candleSize)
+  var candleVersion = config.candleWriter.version;
+
+  batcher = new CandleBatcher({candleSize,candleVersion})
     .on('candle', handleBatchedCandles);
 
   getBatch();
