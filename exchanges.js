@@ -56,7 +56,7 @@ var exchanges = [
       { pair: ['USD', 'ETH'], minimalOrder: { amount: 0.1, unit: 'asset' } },
       { pair: ['LTC', 'ETH'], minimalOrder: { amount: 0.1, unit: 'asset' } },
       { pair: ['RUR', 'ETH'], minimalOrder: { amount: 0.1, unit: 'asset' } }
-      
+
     ],
     requires: ['key', 'secret'],
     providesHistory: false,
@@ -174,7 +174,7 @@ var exchanges = [
        'XST', 'XSV', 'XUSD', 'XVC', 'XXC', 'YACC', 'YANG', 'YC', 'YIN'
     ],
     markets: [
-      // *** BTC <-> XXX      
+      // *** BTC <-> XXX
       { pair: ['BTC', '1CR'], minimalOrder: { amount: 0.0001, unit: 'asset' } },
       { pair: ['BTC', 'ABY'], minimalOrder: { amount: 0.0001, unit: 'asset' } },
       { pair: ['BTC', 'AC'], minimalOrder: { amount: 0.0001, unit: 'asset' } },
@@ -454,7 +454,7 @@ var exchanges = [
       { pair: ['BTC', 'YC'], minimalOrder: { amount: 0.0001, unit: 'asset' } },
       { pair: ['BTC', 'YIN'], minimalOrder: { amount: 0.0001, unit: 'asset' } },
 
-      // *** USDT <-> XXX     
+      // *** USDT <-> XXX
       { pair: ['USDT', 'BTC'], minimalOrder: { amount: 0.0001, unit: 'asset' } },
       { pair: ['USDT', 'DASH'], minimalOrder: { amount: 0.0001, unit: 'asset' } },
       { pair: ['USDT', 'ETC'], minimalOrder: { amount: 0.0001, unit: 'asset' } },
@@ -644,6 +644,19 @@ var exchanges = [
       { pair: ['BTC', 'ETH'], minimalOrder: { amount: 0.01, unit: 'asset' } }
     ],
     requires: ['key', 'secret', 'passphrase'],
+    providesHistory: 'date',
+    providesFullHistory: true,
+    tid: 'tid'
+  },
+  {
+    name: 'FAKE',
+    slug: 'fake',
+    currencies: ['USDT', 'BTC'],
+    assets: ['BTC', 'LTC'],
+    markets: [
+      {pair: ['USDT', 'BTC'], minimalOrder: {amount: 0.0001, unit: 'asset'}}
+    ],
+    requires: ['key', 'secret'],
     providesHistory: 'date',
     providesFullHistory: true,
     tid: 'tid'
