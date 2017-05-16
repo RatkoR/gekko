@@ -223,4 +223,9 @@ Trader.prototype.calculateFee = function(fee, price, amount) {
   return price * amount * fee;
 }
 
+Trader.prototype.getCapabilities = function() {
+  return {};
+}
+
+
 module.exports = Trader;
