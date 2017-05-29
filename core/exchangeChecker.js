@@ -1,5 +1,7 @@
-var exchanges = require('../exchanges.js');
 var _ = require('lodash');
+var util = require('./util');
+var config = util.getConfig();
+var dirs = util.dirs();
 
 var Checker = function() {
   _.bindAll(this);
@@ -12,10 +14,23 @@ Checker.prototype.notValid = function(conf) {
     return this.cantMonitor(conf);
 }
 
+Checker.prototype.getExchangeCapabilities = function(slug) {
+  var capabilities;
+
+  try {
+    var Trader = require(dirs.exchanges + slug);
+    capabilities = Trader.getCapabilities();
+  } catch (e) {
+    capabilities = null;
+  }
+
+  return capabilities;
+}
+
 // check if the exchange is configured correctly for monitoring
 Checker.prototype.cantMonitor = function(conf) {
   var slug = conf.exchange.toLowerCase();
-  var exchange = _.find(exchanges, function(e) { return e.slug === slug });
+  var exchange = this.getExchangeCapabilities(slug);
 
   if(!exchange)
     return 'Gekko does not support the exchange ' + slug;
@@ -48,7 +63,7 @@ Checker.prototype.cantMonitor = function(conf) {
 // full history
 Checker.prototype.cantFetchFullHistory = function(conf) {
   var slug = conf.exchange.toLowerCase();
-  var exchange = _.find(exchanges, function(e) { return e.slug === slug });
+  var exchange = this.getExchangeCapabilities(slug);
 
   if(this.cantMonitor(conf))
     return this.cantMonitor(conf);
@@ -66,7 +81,7 @@ Checker.prototype.cantTrade = function(conf) {
     return cantMonitor;
 
   var slug = conf.exchange.toLowerCase();
-  var exchange = _.find(exchanges, function(e) { return e.slug === slug });
+  var exchange = this.getExchangeCapabilities(slug);
   var name = exchange.name;
 
   if('tradeError' in exchange)
@@ -76,20 +91,21 @@ Checker.prototype.cantTrade = function(conf) {
     return '"your-key" is not a valid API key';
 
   if(conf.secret === 'your-secret')
-    return '"your-secret" is not a valid API secret';    
+    return '"your-secret" is not a valid API secret';
 
   var error = false;
   _.each(exchange.requires, function(req) {
     if(!conf[req])
       error = name + ' requires "' + req + '" to be set in the config';
-  }, this);  
+  }, this);
 
   return error;
 }
 
 Checker.prototype.settings = function(conf) {
   var slug = conf.exchange.toLowerCase();
-  return _.find(exchanges, function(e) { return e.slug === slug });
+  return this.getExchangeCapabilities(slug);
+
 }
 
 module.exports = new Checker();
