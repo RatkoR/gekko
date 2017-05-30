@@ -1,6 +1,6 @@
-// 
+//
 // The market data provider will fetch data from a datasource on tick. It emits:
-// 
+//
 // - `trades`: batch of newly detected trades
 // - `trade`: after Gekko fetched new trades, this
 //   will be the most recent one.
@@ -35,8 +35,10 @@ Manager.prototype.retrieve = function() {
 Manager.prototype.relayTrades = function(batch) {
   this.emit('trades', batch);
 
-  this.sendStartAt(batch);
-  cp.update(batch.last.date.format());
+  if (batch.first) {
+    this.sendStartAt(batch);
+    cp.update(batch.last.date.format());
+  }
 }
 
 Manager.prototype.sendStartAt = _.once(function(batch) {

@@ -28,8 +28,12 @@ var Manager = function() {
 };
 
 util.makeEventEmitter(Manager);
-Manager.prototype.processTrades = function(tradeBatch) {
-  this.candleCreator.write(tradeBatch);
+Manager.prototype.processTrades = function (tradeBatch) {
+    if (tradeBatch.hasCandles) {
+        this.emit('candles', tradeBatch.data);
+        return;
+    }
+    this.candleCreator.write(tradeBatch);
 }
 
 Manager.prototype.relayCandles = function(candles) {

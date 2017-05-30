@@ -1,6 +1,6 @@
-// 
+//
 // Small wrapper that only propogates new trades.
-// 
+//
 // Expects trade batches to be written like:
 // [
 //  {
@@ -16,7 +16,7 @@
 //    amount: x
 //  }
 // ]
-// 
+//
 // Emits 'new trades' event with:
 // {
 //   amount: x,
@@ -25,7 +25,7 @@
 //   first: (trade),
 //   last: (trade)
 //   data: [
-//      // batch of new trades with 
+//      // batch of new trades with
 //      // moments instead of timestamps
 //   ]
 // }
@@ -53,6 +53,11 @@ TradeBatcher.prototype.write = function(batch) {
 
   if(_.isEmpty(batch))
     return log.debug('Trade fetch came back empty.');
+
+  if(this.hasCandles(batch)) {
+      this.emitCandles(batch);
+      return;
+  }
 
   var filterBatch = this.filter(batch);
 
@@ -92,7 +97,19 @@ TradeBatcher.prototype.write = function(batch) {
 
 }
 
-TradeBatcher.prototype.filter = function(batch) {
+TradeBatcher.prototype.emitCandles = function (batch) {
+    var payload = {
+        hasCandles: true,
+        data: batch
+    };
+    this.emit('new batch', payload);
+}
+
+TradeBatcher.prototype.hasCandles = function (batch) {
+    return batch && batch.length && batch[0].start && batch[0].open;
+}
+
+TradeBatcher.prototype.filter = function (batch) {
   // make sure we're not trying to count
   // beyond infinity
   var lastTid = _.last(batch)[this.tid];

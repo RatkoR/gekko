@@ -61,6 +61,12 @@ var CandleCreator = function() {
 util.makeEventEmitter(CandleCreator);
 
 CandleCreator.prototype.write = function(batch) {
+
+  if (!!batch.hasCandles) {
+      this.emit('candles', candles);
+      return;
+  }
+
   var trades = batch.data;
 
   if(_.isEmpty(trades))
@@ -73,7 +79,7 @@ CandleCreator.prototype.write = function(batch) {
   candles = this.addEmptyCandles(candles);
 
   if(_.isEmpty(candles))
-    return;  
+    return;
 
   // the last candle is not complete
   this.threshold = candles.pop().start;
