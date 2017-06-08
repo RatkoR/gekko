@@ -151,7 +151,7 @@ Base.prototype.tick = function(candle) {
 
   // update all indicators
   var price = candle[this.priceValue];
-  _.each(this.indicators, function(i) {
+  _.each(this.indicators, function (i) {
     if(i.input === 'price')
       i.update(price);
     if(i.input === 'candle')
@@ -217,7 +217,7 @@ Base.prototype.propogateTick = function(candle) {
   // than minimally needed. In that case check
   // whether candle start time is > startTime
   var isPremature;
-  if(mode === 'realtime')
+  if((mode === 'realtime') && (!config.watch.backtest))
     isPremature = candle.start < startTime;
   else
     isPremature = false;
@@ -263,6 +263,8 @@ Base.prototype.addIndicator = function(name, type, parameters) {
 
   // some indicators need a price stream, others need full candles
   this.indicators[name].input = Indicators[type].input;
+
+log.debug('Indicator added');
 }
 
 Base.prototype.advice = function(newPosition) {

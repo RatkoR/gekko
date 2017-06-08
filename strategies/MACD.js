@@ -1,5 +1,5 @@
 /*
-  
+
   MACD - DJM 31/12/2013
 
   (updated a couple of times since, check git history)
@@ -86,8 +86,9 @@ method.check = function() {
     if(this.trend.persisted && !this.trend.adviced) {
       this.trend.adviced = true;
       this.advice('long');
-    } else
+    } else {
       this.advice();
+    }
 
   } else if(macddiff < settings.thresholds.down) {
 
@@ -120,9 +121,9 @@ method.check = function() {
 
     // we're not in an up nor in a downtrend
     // but for now we ignore sideways trends
-    // 
+    //
     // read more @link:
-    // 
+    //
     // https://github.com/askmike/gekko/issues/171
 
     // this.trend = {

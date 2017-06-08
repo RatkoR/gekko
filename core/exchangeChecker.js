@@ -3,6 +3,8 @@ var util = require('./util');
 var config = util.getConfig();
 var dirs = util.dirs();
 
+var log = require(dirs.core + 'log');
+
 var Checker = function() {
   _.bindAll(this);
 }
@@ -94,10 +96,13 @@ Checker.prototype.cantTrade = function(conf) {
     return '"your-secret" is not a valid API secret';
 
   var error = false;
-  _.each(exchange.requires, function(req) {
-    if(!conf[req])
-      error = name + ' requires "' + req + '" to be set in the config';
-  }, this);
+
+  if (!conf.backtest) {
+    _.each(exchange.requires, function(req) {
+      if(!conf[req])
+        error = name + ' requires "' + req + '" to be set in the config';
+    }, this);
+  }
 
   return error;
 }

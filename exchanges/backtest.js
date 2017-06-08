@@ -47,10 +47,9 @@ var Trader = function (config) {
     this.orders = [];
     // all trades durring backtest
     this.trades = [];
-
-    this.lastCandle = { start: 0, open: 0, high: 0, low: 0, close: 0, volume: 0, vwp: 0, trades: 0, volume_buy: 0, trades_buy: 0, raw: [] };
 };
 
+Trader.lastCandle = { start: 0, open: 0, high: 0, low: 0, close: 0, volume: 0, vwp: 0, trades: 0, volume_buy: 0, trades_buy: 0, raw: [] };
 
 Trader.prototype.getPortfolio = function (callback) {
     var portfolio = [];
@@ -60,7 +59,10 @@ Trader.prototype.getPortfolio = function (callback) {
 };
 
 Trader.prototype.getTicker = function (callback) {
-    callback({ data: 'not implemented' });
+    callback(null, {
+      bid: parseFloat(Trader.lastCandle.low),
+      ask: parseFloat(Trader.lastCandle.high),
+    });
 };
 
 Trader.prototype.getFee = function (callback) {
@@ -68,7 +70,8 @@ Trader.prototype.getFee = function (callback) {
 };
 
 Trader.prototype.buy = function (amount, price, callback) {
-
+log.debug('!!!!MARKET BUY');
+/*
     var fee = this.calculateFee(this.fee, price, amount);
 
     // check if there is enough currency
@@ -93,10 +96,12 @@ Trader.prototype.buy = function (amount, price, callback) {
     this.orders.push(order);
 
     callback(null, order.time);
-
+*/
 };
 
 Trader.prototype.sell = function (amount, price, callback) {
+log.debug('!!!!MARKET SELL');
+/*
     var fee = this.calculateFee(this.fee, price, amount);
 
     this.portfolio.assetReserved += amount;
@@ -114,6 +119,7 @@ Trader.prototype.sell = function (amount, price, callback) {
     this.orders.push(order);
 
     callback(null, order.time);
+*/
 };
 
 Trader.prototype.checkOrder = function (order, callback) {
@@ -149,26 +155,10 @@ Trader.prototype.getTrades = function (since, callback, descending) {
             return candle;
         });
 
-        log.debug("Forwarding " + candles.length + ' candles (' + candles[0].start.format() + ').');
+        Trader.lastCandle = candles[0];
+log.debug("Forwarding " + candles.length + ' candles (' + candles[0].start.format() + ').');
 
         callback(null, candles);
-        return;
-
-        var trades = this.createTrades(candle);
-
-log.debug("TRADES " + JSON.stringify(trades));
-        return;
-
-        var result = _.map(trades, t => {
-            return {
-                date: t.date,
-                tid: +t.tid,
-                price: +t.price,
-                amount: +t.amount
-            };
-        });
-
-        callback(null, result.reverse());
     }.bind(this);
 
     this.reader.get(
@@ -177,53 +167,19 @@ log.debug("TRADES " + JSON.stringify(trades));
         'full',
         process
     );
+
+log.debug("last candle: " + JSON.stringify(Trader.lastCandle));
 };
 
-Trader.prototype.createTrades = function (candle) {
-    if (candle.trades === 0) {
-        return [];
-    }
-
-    if (candle.trades === 1) {
-        return [{
-            date: candle.start,
-            tid: candle.id,
-            price: wvp,
-            amount: volume
-        }];
-    }
-
-    var trades = [];
-
-    for (var i = 0; i < candle.trades; i++) {
-        trades.push({
-            date: candle.start,
-            tid: candle.id + '_' + i,
-            price: 0,
-            amount: 0
-        });
-    }
-
-    _.head(trades).price = candle.open;
-    _.last(trades).price = candle.close;
-
-    if (candle.trades === 3) {
-        trades[1].price = candle.open === candle.high ? candle.low : candle.high;
-    }
-
-    if (candle.trades > 3) {
-        trades[1].price = candle.high;
-        trades[2].price = candle.low;
-    }
-
-    return trades;
-};
 
 // Backtest exchange specifics
 
 
 // order matching - process candle
 Trader.prototype.tick = function(candle) {
+
+log.debug('!!!!MARKET TICK');
+/*
   // get open orders
   var openOrders = _.where(this.orders, {status:'open'});
   var volume = {buy:order.volume_buy, sell:candle.volume-candle.volume_buy};
@@ -299,16 +255,13 @@ Trader.prototype.tick = function(candle) {
       }
     };
   })
+  */
 }
 
 
 // helper
 Trader.prototype.calculateFee = function(fee, price, amount) {
   return price * amount * fee;
-}
-
-Trader.prototype.getCapabilities = function() {
-  return {};
 }
 
 Trader.getCapabilities = function () {

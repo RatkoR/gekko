@@ -27,6 +27,8 @@ var Manager = function(conf) {
   var exchangeMeta = checker.settings(conf);
   this.exchangeSlug = exchangeMeta.slug;
 
+  this.exchangeSlug = (conf.backtest) ? 'backtest' : this.exchangeSlug;
+
   // create an exchange
   var Exchange = require(dirs.exchanges + this.exchangeSlug);
   this.exchange = new Exchange(conf);
@@ -144,7 +146,7 @@ Manager.prototype.trade = function(what) {
     var amount, price;
 
     if(what === 'BUY') {
-
+log.debug("!!!!!!!!!!!  BALANCE: " + this.getBalance(this.currency) + " " + this.currency);
       amount = this.getBalance(this.currency) / this.ticker.ask;
 
       // can we just create a MKT order?
