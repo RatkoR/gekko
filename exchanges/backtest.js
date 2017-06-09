@@ -59,9 +59,12 @@ Trader.prototype.getPortfolio = function (callback) {
 };
 
 Trader.prototype.getTicker = function (callback) {
+    var ask = Trader.lastCandle.close + config.paperTrader.slippage;
+    var bid = Trader.lastCandle.close - config.paperTrader.slippage;
+
     callback(null, {
-      bid: parseFloat(Trader.lastCandle.low),
-      ask: parseFloat(Trader.lastCandle.high),
+      bid: parseFloat(bid),
+      ask: parseFloat(ask),
     });
 };
 
