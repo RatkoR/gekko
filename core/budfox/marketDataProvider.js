@@ -27,7 +27,10 @@ const Manager = function(config) {
 util.makeEventEmitter(Manager);
 
 // HANDLERS
-Manager.prototype.retrieve = function() {
+Manager.prototype.retrieve = function () {
+  if (this.source.watcher && this.source.watcher.tick)
+    this.source.watcher.tick();
+
   this.source.fetch();
 }
 
