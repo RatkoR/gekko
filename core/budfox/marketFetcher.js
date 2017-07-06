@@ -24,7 +24,7 @@ var Fetcher = function(config) {
   var provider = config.watch.exchange.toLowerCase();
   var exchangePath = util.dirs().gekko + 'exchanges/';
 
-  var exchangeName = (config.watch.exchange.backtest) ? provider : 'backtest';
+  var exchangeName = (config.watch.backtest) ? 'backtest' : provider;
 
   var DataProvider = require(exchangePath + exchangeName);
   _.bindAll(this);
