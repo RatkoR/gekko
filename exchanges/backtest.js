@@ -170,8 +170,6 @@ log.debug("Forwarding " + candles.length + ' candles (' + candles[0].start.forma
         'full',
         process
     );
-
-log.debug("last candle: " + JSON.stringify(Trader.lastCandle));
 };
 
 
